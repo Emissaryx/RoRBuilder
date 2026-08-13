@@ -37,6 +37,13 @@ export interface CareerMasteryData {
 
 const cache = new Map<Career, Promise<CareerMasteryData>>();
 
+const plannerAssetUrl = (path: string): string => {
+  const base = globalThis.location.pathname.startsWith('/loadout')
+    ? '/loadout'
+    : '';
+  return `${base}${path}`;
+};
+
 /**
  * Lazily fetches a career's mastery/tactics/morale ability data. Cached per
  * career for the lifetime of the page so switching back and forth doesn't
@@ -50,10 +57,13 @@ export function getCareerMasteryData(
 ): Promise<CareerMasteryData> {
   let promise = cache.get(career);
   if (!promise) {
-    promise = fetch(`/loadout/data/abilities/${career}.json`).then((res) => {
-      if (!res.ok) throw new Error(`Failed to load mastery data for ${career}`);
-      return res.json() as Promise<CareerMasteryData>;
-    });
+    promise = fetch(plannerAssetUrl(`/data/abilities/${career}.json`)).then(
+      (res) => {
+        if (!res.ok)
+          throw new Error(`Failed to load mastery data for ${career}`);
+        return res.json() as Promise<CareerMasteryData>;
+      },
+    );
     cache.set(career, promise);
   }
   return promise;

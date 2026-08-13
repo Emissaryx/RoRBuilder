@@ -230,7 +230,11 @@ const parseShareParams = (): ShareParams => {
   };
 };
 
-export const Loadout = (): ReactElement => {
+export const Loadout = ({
+  initialTab,
+}: {
+  initialTab?: 'gear' | 'renown' | 'mastery';
+}): ReactElement => {
   const britishEnglish = true;
   const displayLabel = (label: string): string => {
     if (!britishEnglish) return label;
@@ -277,7 +281,7 @@ export const Loadout = (): ReactElement => {
   );
   const [activePlannerTab, setActivePlannerTab] = useState<
     'gear' | 'renown' | 'mastery'
-  >(initial.openMasteryPanel ? 'mastery' : initial.activeTab);
+  >(initialTab ?? (initial.openMasteryPanel ? 'mastery' : initial.activeTab));
   const [masteryPathPoints, setMasteryPathPoints] = useState<MasteryPathPoints>(
     initial.masteryPathPoints ?? { a: 0, b: 0, c: 0 },
   );
@@ -1446,6 +1450,43 @@ export const Loadout = (): ReactElement => {
 
       {activePlannerTab === 'mastery' && (
         <div>
+          <div className="loadout-toolbar mastery-career-toolbar mb-4">
+            <div className="buttons has-addons">
+              <button
+                type="button"
+                className={`button ${
+                  realm === 'Order' ? 'is-link is-selected' : ''
+                }`}
+                onClick={() => handleRealmChange('Order')}
+              >
+                Order
+              </button>
+              <button
+                type="button"
+                className={`button ${
+                  realm === 'Destruction' ? 'is-danger is-selected' : ''
+                }`}
+                onClick={() => handleRealmChange('Destruction')}
+              >
+                Destruction
+              </button>
+            </div>
+            <div className="select">
+              <select
+                aria-label="Mastery career"
+                value={career}
+                onChange={(event) =>
+                  handleCareerChange(event.target.value as Career)
+                }
+              >
+                {careerOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {enumLabel(option)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="planner-tab-actions">
             <button
               type="button"

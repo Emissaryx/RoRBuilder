@@ -12,11 +12,8 @@ const RoRHeader = () => (
         <Link className="navbar-item" to="/">
           Build Planner
         </Link>
-        <Link className="navbar-item" to="/legacy">
-          Classic Career Builder
-        </Link>
-        <Link className="navbar-item" to="/renown">
-          Classic Renown Builder
+        <Link className="navbar-item" to="/mastery">
+          Mastery Builder
         </Link>
       </div>
       <div className="navbar-end">

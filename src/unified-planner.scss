@@ -2926,6 +2926,14 @@ $tooltip-item-bonus: rgb(255, 255, 0);
   margin: -0.25rem 0 0.75rem;
 }
 
+.mastery-career-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
 .loadout-builder-embedded .modal-card.is-embedded {
   margin: 0;
   max-height: none;

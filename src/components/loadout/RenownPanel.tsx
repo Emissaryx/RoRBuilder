@@ -8,6 +8,13 @@ import {
 
 type RenownAbility = (typeof RENOWN_ABILITIES)[number];
 
+const plannerAssetUrl = (path: string): string => {
+  const base = globalThis.location.pathname.startsWith('/loadout')
+    ? '/loadout'
+    : '';
+  return `${base}${path}`;
+};
+
 const RENOWN_ICONS: Record<RenownAbility['key'], string> = {
   might: 'statbuff_might',
   bladeMaster: 'statbuff_blademaster',
@@ -139,9 +146,9 @@ export const RenownPanel = ({
                       aria-hidden="true"
                     >
                       <img
-                        src={`/loadout/images/renown/${
-                          RENOWN_ICONS[def.key]
-                        }.png`}
+                        src={plannerAssetUrl(
+                          `/images/renown/${RENOWN_ICONS[def.key]}.png`,
+                        )}
                         alt=""
                       />
                     </span>

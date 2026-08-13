@@ -19,6 +19,11 @@ export default () => {
         <Route path="/renown/:slug" exact component={Renown} />
         <Route path="/renown" exact component={Renown} />
         <Route path="/legacy" exact component={Home} />
+        <Route
+          path="/mastery"
+          exact
+          render={() => <UnifiedPlanner mastery />}
+        />
         <Route path="/" exact component={UnifiedPlanner} />
         <Route component={NotFound} />
       </Switch>
