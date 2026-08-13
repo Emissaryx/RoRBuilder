@@ -1,22 +1,23 @@
-import { Link } from 'react-router-dom';
-
 const RoRHeader = () => (
   <nav className="navbar ror-builder-navbar" aria-label="Main navigation">
     <div className="navbar-brand">
-      <Link className="navbar-item ror-builder-brand" to="/">
+      <a className="navbar-item ror-builder-brand" href="/">
         RoR Build Planner
-      </Link>
+      </a>
     </div>
     <div className="navbar-menu is-active">
       <div className="navbar-start">
-        <Link className="navbar-item" to="/">
+        <a className="navbar-item" href="/">
           Build Planner
-        </Link>
-        <Link className="navbar-item" to="/mastery">
+        </a>
+        <a className="navbar-item" href="/mastery">
           Mastery Builder
-        </Link>
+        </a>
       </div>
       <div className="navbar-end">
+        <a className="navbar-item" href="https://www.returnofreckoning.com/">
+          Return of Reckoning
+        </a>
         <a
           className="navbar-item"
           href="https://killboard.returnofreckoning.com/"
