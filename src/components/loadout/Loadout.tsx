@@ -1112,9 +1112,11 @@ export const Loadout = ({
                   <button
                     type="button"
                     className="button is-small"
+                    title="Reset gear, renown, and mastery back to a blank build"
                     onClick={() => {
                       setLoadout({});
                       setCharacterName('');
+                      setLevel(40);
                       setRenownSelections({});
                       setRenownRank(80);
                       setMasteryPathPoints({ a: 0, b: 0, c: 0 });
@@ -1122,12 +1124,44 @@ export const Loadout = ({
                       setSelectedTactics([]);
                       setSelectedMorales([]);
                       setHasSovereign(false);
+                      setBuildName('');
+                      setBuildDescription('');
+                      setActiveBuildId(null);
+                      setListPublicly(false);
+                      setSaveStatus('');
+                      // Drop any ?shared=/build-sharing query params too, so
+                      // a refresh (or re-sharing the URL) doesn't silently
+                      // bring the old build right back.
+                      window.history.replaceState(
+                        null,
+                        '',
+                        window.location.pathname,
+                      );
                     }}
                   >
                     <span className="icon is-small">
                       <i className="fas fa-rotate-left" />
                     </span>
                     <span>Clear loadout</span>
+                  </button>
+                </div>
+                <div className="control">
+                  <button
+                    type="button"
+                    className="button is-small"
+                    title="Unequip every item and clear the character name (leaves renown and mastery alone)"
+                    disabled={
+                      Object.keys(loadout).length === 0 && !characterName
+                    }
+                    onClick={() => {
+                      setLoadout({});
+                      setCharacterName('');
+                    }}
+                  >
+                    <span className="icon is-small">
+                      <i className="fas fa-rotate-left" />
+                    </span>
+                    <span>Clear Gear</span>
                   </button>
                 </div>
               </div>
@@ -1501,6 +1535,32 @@ export const Loadout = ({
                   ? 'Mastery link copied!'
                   : 'Share Mastery'}
               </span>
+            </button>
+            <button
+              type="button"
+              className="button is-small"
+              title="Reset the mastery tree, tactics, and morales back to a blank build"
+              disabled={
+                masteryPathPoints.a === 0 &&
+                masteryPathPoints.b === 0 &&
+                masteryPathPoints.c === 0 &&
+                acquiredTierAbilityIds.length === 0 &&
+                selectedTactics.length === 0 &&
+                selectedMorales.length === 0 &&
+                !hasSovereign
+              }
+              onClick={() => {
+                setMasteryPathPoints({ a: 0, b: 0, c: 0 });
+                setAcquiredTierAbilityIds([]);
+                setSelectedTactics([]);
+                setSelectedMorales([]);
+                setHasSovereign(false);
+              }}
+            >
+              <span className="icon is-small">
+                <i className="fas fa-rotate-left" />
+              </span>
+              <span>Clear Mastery</span>
             </button>
           </div>
           <MasteryBuilder
