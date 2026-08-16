@@ -2922,7 +2922,9 @@ $tooltip-item-bonus: rgb(255, 255, 0);
 
 .planner-tab-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 0.5rem;
   margin: -0.25rem 0 0.75rem;
 }
 
