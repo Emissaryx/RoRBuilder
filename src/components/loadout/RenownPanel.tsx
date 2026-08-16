@@ -70,12 +70,33 @@ export const RenownPanel = ({
   const cap = getRenownPointCap(level, renownRank);
   const spent = getRenownPointsSpent(selections);
 
+  // Raising a rank must not be able to push total spend past the overall
+  // renown point cap, even though each individual ability's own maxRank may
+  // still allow it. Lowering a rank is always allowed (including when the
+  // build is already over budget, e.g. after level/renown rank drops).
+  const canAfford = (
+    def: RenownAbility,
+    targetRank: number,
+    currentRank: number,
+  ): boolean => {
+    if (targetRank <= currentRank) return true;
+    const nextSpent =
+      spent - def.costByRank[currentRank] + def.costByRank[targetRank];
+    return nextSpent <= cap;
+  };
+
   const setRank = (
-    key: RenownAbility['key'],
+    def: RenownAbility,
     rank: number,
     maxRank: number,
   ): void => {
-    onChange({ ...selections, [key]: Math.max(0, Math.min(maxRank, rank)) });
+    const clamped = Math.max(0, Math.min(maxRank, rank));
+    const currentRank = Math.max(
+      0,
+      Math.min(maxRank, selections[def.key] ?? 0),
+    );
+    if (!canAfford(def, clamped, currentRank)) return;
+    onChange({ ...selections, [def.key]: clamped });
   };
 
   return (
@@ -174,7 +195,8 @@ export const RenownPanel = ({
                         <button
                           type="button"
                           className={tier <= rank ? 'is-active' : ''}
-                          onClick={() => setRank(def.key, tier, maxRank)}
+                          onClick={() => setRank(def, tier, maxRank)}
+                          disabled={!canAfford(def, tier, rank)}
                           aria-label={`Set ${def.label} to rank ${tier}, ${cost} points`}
                           key={tier}
                         >
@@ -188,7 +210,7 @@ export const RenownPanel = ({
                     <button
                       type="button"
                       className="button is-small"
-                      onClick={() => setRank(def.key, rank - 1, maxRank)}
+                      onClick={() => setRank(def, rank - 1, maxRank)}
                       disabled={rank <= 0}
                       aria-label={`Decrease ${def.label}`}
                     >
@@ -200,8 +222,8 @@ export const RenownPanel = ({
                     <button
                       type="button"
                       className="button is-small"
-                      onClick={() => setRank(def.key, rank + 1, maxRank)}
-                      disabled={rank >= maxRank}
+                      onClick={() => setRank(def, rank + 1, maxRank)}
+                      disabled={rank >= maxRank || !canAfford(def, rank + 1, rank)}
                       aria-label={`Increase ${def.label}`}
                     >
                       +
@@ -209,7 +231,7 @@ export const RenownPanel = ({
                     <button
                       type="button"
                       className="button is-small loadout-renown-reset"
-                      onClick={() => setRank(def.key, 0, maxRank)}
+                      onClick={() => setRank(def, 0, maxRank)}
                       disabled={rank === 0}
                       aria-label={`Reset ${def.label}`}
                     >
