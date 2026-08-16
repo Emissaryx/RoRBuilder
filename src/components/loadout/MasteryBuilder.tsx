@@ -205,15 +205,12 @@ export const MasteryBuilder = ({
   // point *on top of* the meter, tracked separately here via
   // acquiredTierAbilityIds, so the meter's displayed number does not itself
   // grow when an ability is taken. Total spent = filler in all 3 paths, plus
-  // one point per acquired ability (tier abilities, tactics, and morales all
-  // draw from the same shared pool in the live game).
+  // one point per acquired tier ability. Tactics and morales do NOT draw from
+  // this pool in the live game (or in dalen's legacy AbilityTactic.tsx /
+  // AbilityMorale.tsx) - choosing which unlocked tactics/morales to bring
+  // into your loadout is free, gated only by tacticLimit and one-per-rank.
   const spent =
-    pathPoints.a +
-    pathPoints.b +
-    pathPoints.c +
-    acquiredTierAbilityIds.length +
-    selectedTactics.length +
-    selectedMorales.length;
+    pathPoints.a + pathPoints.b + pathPoints.c + acquiredTierAbilityIds.length;
   const remaining = totalPoints - spent;
 
   const allTierAbilities = useMemo(() => {
@@ -224,10 +221,11 @@ export const MasteryBuilder = ({
   }, [data]);
 
   // Setting a path's meter can drop it below the requirement for an already
-  // -acquired ability in that path (or, since tactics/morales pull from a
-  // shared pool that this meter change may now overdraw, elsewhere too) --
-  // when that happens the game auto-refunds whatever no longer qualifies,
-  // same as dalen's componentWillReceiveProps cleanup.
+  // -acquired ability in that path -- when that happens the game auto
+  // -refunds whatever no longer qualifies, same as dalen's
+  // componentWillReceiveProps cleanup. If that ability had also been
+  // selected as an active tactic, drop it from the loadout too rather than
+  // leaving a phantom selection for an ability that's no longer unlocked.
   const setPath = (key: 'a' | 'b' | 'c', value: number): void => {
     const clamped = Math.max(0, Math.min(MASTERY_PATH_MAX, value));
     const nextPathPoints = { ...pathPoints, [key]: clamped };
@@ -240,16 +238,18 @@ export const MasteryBuilder = ({
       ? acquiredTierAbilityIds.filter((id) => !invalidated.includes(id))
       : acquiredTierAbilityIds;
     const nextSpent =
-      nextPathPoints.a +
-      nextPathPoints.b +
-      nextPathPoints.c +
-      nextAcquired.length +
-      selectedTactics.length +
-      selectedMorales.length;
+      nextPathPoints.a + nextPathPoints.b + nextPathPoints.c + nextAcquired.length;
     if (nextSpent > totalPoints) return;
     onPathPointsChange(nextPathPoints);
     if (nextAcquired !== acquiredTierAbilityIds)
       onAcquiredTierAbilityIdsChange(nextAcquired);
+    if (invalidated.length) {
+      const nextSelectedTactics = selectedTactics.filter(
+        (id) => !invalidated.includes(id),
+      );
+      if (nextSelectedTactics.length !== selectedTactics.length)
+        onSelectedTacticsChange(nextSelectedTactics);
+    }
   };
 
   const investInTier = (
@@ -262,6 +262,11 @@ export const MasteryBuilder = ({
       onAcquiredTierAbilityIdsChange(
         acquiredTierAbilityIds.filter((id) => id !== tier.ability.id),
       );
+      if (selectedTactics.includes(tier.ability.id)) {
+        onSelectedTacticsChange(
+          selectedTactics.filter((id) => id !== tier.ability.id),
+        );
+      }
       return;
     }
     const fillerNeeded = Math.max(
@@ -327,6 +332,9 @@ export const MasteryBuilder = ({
     return list;
   }, [data, acquiredTierAbilityIds]);
 
+  // Selecting a tactic to bring into the loadout is free (see the `spent`
+  // comment above) - it's capped only by tacticLimit, same as dalen's legacy
+  // AbilityTactic.tsx.
   const toggleTactic = (ability: MasteryAbility): void => {
     if (level < ability.minRank) return;
     const isSelected = selectedTactics.includes(ability.id);
@@ -334,14 +342,15 @@ export const MasteryBuilder = ({
       onSelectedTacticsChange(
         selectedTactics.filter((id) => id !== ability.id),
       );
-    } else if (selectedTactics.length < tacticLimit && remaining > 0) {
+    } else if (selectedTactics.length < tacticLimit) {
       onSelectedTacticsChange([...selectedTactics, ability.id]);
     }
   };
 
   // Only one morale can be slotted per rank (1-4), same as the live game and
   // the official builder: picking a different morale in the same rank swaps
-  // out whichever one was selected there before.
+  // out whichever one was selected there before. Like tactics, morale
+  // selection is free and doesn't draw from the mastery point pool.
   const selectMorale = (
     ability: MasteryAbility,
     rankMates: MasteryAbility[],
@@ -354,7 +363,6 @@ export const MasteryBuilder = ({
       );
       return;
     }
-    if (remaining <= 0) return;
     const rankMateIds = new Set(rankMates.map((a) => a.id));
     onSelectedMoralesChange([
       ...selectedMorales.filter((id) => !rankMateIds.has(id)),
